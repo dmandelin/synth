@@ -32,6 +32,28 @@ class Synth {
         this.gainNode.gain.setTargetAtTime(1, now, this.smoothingInterval);
         this.gainNode.gain.setTargetAtTime(0, now + beepLengthInSeconds, this.smoothingInterval);
     }
+
+    playNotes() {
+        const beepLengthInSeconds = 0.25;
+
+        const now = this.audioContext.currentTime;
+        this.gainNode.gain.setTargetAtTime(1, now, this.smoothingInterval);
+        this.gainNode.gain.setTargetAtTime(0, now + beepLengthInSeconds * 2, this.smoothingInterval);
+        this.oscillator.frequency.setValueAtTime(256, now);
+        this.oscillator.frequency.setValueAtTime(512, now + beepLengthInSeconds);
+        this.oscillator.frequency.setValueAtTime(256, now + beepLengthInSeconds * 2);
+    }
+
+    playSlide() {
+        const beepLengthInSeconds = 0.25;
+
+        const now = this.audioContext.currentTime;
+        this.gainNode.gain.setTargetAtTime(1, now, this.smoothingInterval);
+        this.gainNode.gain.setTargetAtTime(0, now + beepLengthInSeconds, this.smoothingInterval);
+        this.oscillator.frequency.setValueAtTime(256, now);
+        this.oscillator.frequency.setTargetAtTime(512, now, 0.2);
+        this.oscillator.frequency.setValueAtTime(256, now + beepLengthInSeconds + 0.01);
+    }
 }
 
 let synth: Synth | undefined;
@@ -59,6 +81,20 @@ document.addEventListener('DOMContentLoaded', () => {
         if (event.key === ' ' || event.key === 'Spacebar') {
             event.preventDefault();
             getSynth().playNote();
+        }
+    })
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === '2') {
+            event.preventDefault();
+            getSynth().playNotes();
+        }
+    })
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 's') {
+            event.preventDefault();
+            getSynth().playSlide();
         }
     })
 });
