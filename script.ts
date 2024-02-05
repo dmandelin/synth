@@ -1,3 +1,4 @@
+const MIDDLE_C = 261.63;
 
 class Synth {
     private readonly audioContext = new window.AudioContext();
@@ -33,17 +34,6 @@ class Synth {
         this.gainNode.gain.setTargetAtTime(0, now + beepLengthInSeconds, this.smoothingInterval);
     }
 
-    playNotes() {
-        const beepLengthInSeconds = 0.25;
-
-        const now = this.audioContext.currentTime;
-        this.gainNode.gain.setTargetAtTime(1, now, this.smoothingInterval);
-        this.gainNode.gain.setTargetAtTime(0, now + beepLengthInSeconds * 2, this.smoothingInterval);
-        this.oscillator.frequency.setValueAtTime(256, now);
-        this.oscillator.frequency.setValueAtTime(512, now + beepLengthInSeconds);
-        this.oscillator.frequency.setValueAtTime(256, now + beepLengthInSeconds * 2);
-    }
-
     playSlide() {
         const beepLengthInSeconds = 0.25;
 
@@ -53,6 +43,26 @@ class Synth {
         this.oscillator.frequency.setValueAtTime(256, now);
         this.oscillator.frequency.setTargetAtTime(512, now, 0.2);
         this.oscillator.frequency.setValueAtTime(256, now + beepLengthInSeconds + 0.01);
+    }
+
+    playNotes(notes: readonly number[]) {
+        const toneDuration = 0.22;
+        const silenceDuration = 0.03;
+        const noteDuration = toneDuration + silenceDuration;
+
+        const now = this.audioContext.currentTime;
+        let t = now;
+        for (const n of notes) {
+            const f = MIDDLE_C * Math.pow(2, n/12);
+            this.oscillator.frequency.setValueAtTime(f, t);
+            this.gainNode.gain.setTargetAtTime(1, t, this.smoothingInterval);
+            this.gainNode.gain.setTargetAtTime(0, t + toneDuration, this.smoothingInterval);
+            t += noteDuration;
+        }        
+    }
+
+    playScale() {
+        this.playNotes([0, 2, 4, 5, 7, 9, 11, 12]);
     }
 }
 
@@ -85,9 +95,16 @@ document.addEventListener('DOMContentLoaded', () => {
     })
 
     document.addEventListener('keydown', (event) => {
+        if (event.key === '1') {
+            event.preventDefault();
+            getSynth().playNotes([0]);
+        }
+    })
+
+    document.addEventListener('keydown', (event) => {
         if (event.key === '2') {
             event.preventDefault();
-            getSynth().playNotes();
+            getSynth().playNotes([0, 5, 0]);
         }
     })
 
@@ -95,6 +112,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (event.key === 's') {
             event.preventDefault();
             getSynth().playSlide();
+        }
+    })
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'c') {
+            event.preventDefault();
+            getSynth().playScale();
         }
     })
 });
