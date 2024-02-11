@@ -69,7 +69,7 @@ class Synth {
     }
 
     playScale() {
-        this.playNotes("c d e f g h a b");
+        this.playNotes("c d e f g a b c4 c4 b a g f e d c");
     }
 
     playSong() {
@@ -81,13 +81,25 @@ class Note {
     constructor(readonly pitch: number, readonly duration: number = 0.25) {}
 
     static parse(s: string) {
-        const pitch = Note.parsePitch(s[0]);
-        const duration = s.length > 1 ? Note.parseDuration(s[1]) : 0.25;
+        const [pitch, rest] = Note.parsePitch(s);
+        const duration = rest.length ? Note.parseDuration(rest) : 0.25;
         return new Note(pitch, duration);
     }
 
-    static parsePitch(s: string) {
-        const c = s.toLowerCase();
+    static parsePitch(s: string): [number, string] {
+        const pitch = this.parsePitchLetter(s);
+        if (s.length == 1) {
+            return [pitch, s.substring(1)];
+        }
+        const d = Note.parseDigit(s[1]);
+        if (d === undefined) {
+            return [pitch, s.substring(1)];
+        }
+        return [pitch + (d - 3) * 12, s.substring(2)]
+    }
+
+    static parsePitchLetter(s: string) {
+        const c = s[0].toLowerCase();
         switch (c) {
             case 'c': return 0;
             case 'd': return 2;
@@ -96,7 +108,13 @@ class Note {
             case 'g': return 7;
             case 'a': return 9;
             case 'b': return 11;
+            default: return -0.5;
         }
+    }
+
+    static parseDigit(s: string) {
+        const d = s.charCodeAt(0) - '0'.charCodeAt(0);
+        return d >= 0 && d <= 9 ? d : undefined;
     }
 
     static parseDuration(s: string) {
