@@ -35,31 +35,63 @@ class Synth {
         this.oscillator.frequency.setValueAtTime(256, now + beepLengthInSeconds + 0.01);
     }
     playNotesByNumber(notes) {
-        const toneDuration = 0.22;
-        const silenceDuration = 0.03;
+        const toneDuration = 0.88;
+        const silenceDuration = 0.12;
         const noteDuration = toneDuration + silenceDuration;
         const now = this.audioContext.currentTime;
         let t = now;
         for (const n of notes) {
-            const f = MIDDLE_C * Math.pow(2, n / 12);
+            const f = MIDDLE_C * Math.pow(2, n.pitch / 12);
             this.oscillator.frequency.setValueAtTime(f, t);
             this.gainNode.gain.setTargetAtTime(1, t, this.smoothingInterval);
-            this.gainNode.gain.setTargetAtTime(0, t + toneDuration, this.smoothingInterval);
-            t += noteDuration;
+            this.gainNode.gain.setTargetAtTime(0, t + toneDuration * n.duration, this.smoothingInterval);
+            t += noteDuration * n.duration;
         }
     }
     playNotes(notes) {
         if (typeof notes === 'string') {
             notes = notes.split(' ');
         }
-        const numbers = notes.map(ch => ch.toLowerCase().charCodeAt(0) - 'c'.charCodeAt(0));
-        this.playNotesByNumber(numbers);
+        this.playNotesByNumber(notes.map(ns => Note.parse(ns)));
     }
     playScale() {
-        this.playNotesByNumber([0, 2, 4, 5, 7, 9, 11, 12]);
+        this.playNotes("c d e f g h a b");
     }
     playSong() {
-        this.playNotes("e d c d e e e d d d e g g e d c d d e e e e d e d c");
+        this.playNotes("e d c d e e eh d d dh e g gh e d c d e e e e d d e d ch");
+    }
+}
+class Note {
+    pitch;
+    duration;
+    constructor(pitch, duration = 0.25) {
+        this.pitch = pitch;
+        this.duration = duration;
+    }
+    static parse(s) {
+        const pitch = Note.parsePitch(s[0]);
+        const duration = s.length > 1 ? Note.parseDuration(s[1]) : 0.25;
+        return new Note(pitch, duration);
+    }
+    static parsePitch(s) {
+        const c = s.toLowerCase();
+        switch (c) {
+            case 'c': return 0;
+            case 'd': return 2;
+            case 'e': return 4;
+            case 'f': return 5;
+            case 'g': return 7;
+            case 'a': return 9;
+            case 'b': return 11;
+        }
+    }
+    static parseDuration(s) {
+        switch (s) {
+            case 'w': return 1.0;
+            case 'h': return 0.5;
+            case 'e': return 0.125;
+            default: return 0.25;
+        }
     }
 }
 let synth;
@@ -93,7 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('keydown', (event) => {
         if (event.key === '2') {
             event.preventDefault();
-            getSynth().playNotesByNumber([0, 5, 0]);
+            getSynth().playNotes("ch gh ch");
         }
     });
     document.addEventListener('keydown', (event) => {
