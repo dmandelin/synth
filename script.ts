@@ -12,6 +12,7 @@ class Synth {
         this.gainNode.gain.setValueAtTime(0, this.audioContext.currentTime);
 
         this.oscillator.frequency.value = 262;
+        this.oscillator.type = 'triangle';
         this.oscillator.connect(this.gainNode);
         this.oscillator.start();
     }
