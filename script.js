@@ -34,7 +34,7 @@ class Synth {
         this.oscillator.frequency.setTargetAtTime(512, now, 0.2);
         this.oscillator.frequency.setValueAtTime(256, now + beepLengthInSeconds + 0.01);
     }
-    playNotes(notes) {
+    playNotesByNumber(notes) {
         const toneDuration = 0.22;
         const silenceDuration = 0.03;
         const noteDuration = toneDuration + silenceDuration;
@@ -48,8 +48,18 @@ class Synth {
             t += noteDuration;
         }
     }
+    playNotes(notes) {
+        if (typeof notes === 'string') {
+            notes = notes.split(' ');
+        }
+        const numbers = notes.map(ch => ch.toLowerCase().charCodeAt(0) - 'c'.charCodeAt(0));
+        this.playNotesByNumber(numbers);
+    }
     playScale() {
-        this.playNotes([0, 2, 4, 5, 7, 9, 11, 12]);
+        this.playNotesByNumber([0, 2, 4, 5, 7, 9, 11, 12]);
+    }
+    playSong() {
+        this.playNotes("e d c d e e e d d d e g g e d c d d e e e e d e d c");
     }
 }
 let synth;
@@ -77,13 +87,13 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('keydown', (event) => {
         if (event.key === '1') {
             event.preventDefault();
-            getSynth().playNotes([0]);
+            getSynth().playNotes("c");
         }
     });
     document.addEventListener('keydown', (event) => {
         if (event.key === '2') {
             event.preventDefault();
-            getSynth().playNotes([0, 5, 0]);
+            getSynth().playNotesByNumber([0, 5, 0]);
         }
     });
     document.addEventListener('keydown', (event) => {
@@ -96,6 +106,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (event.key === 'c') {
             event.preventDefault();
             getSynth().playScale();
+        }
+    });
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'z') {
+            event.preventDefault();
+            getSynth().playSong();
         }
     });
 });
